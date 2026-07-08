@@ -45,4 +45,15 @@ module.exports = [
     lanHost: '172.21.13.32',
     author: '郭元祯',
   },
+  {
+    id: 'pcrl-mrg',
+    name: '脑CT报告生成推理系统',
+    // PCRL-MRG（EMNLP 2024）：ViT-MLP-LLaMA3-8B(LoRA) 脑CT报告生成模型的单独部署推理
+    // 服务，Python(FastAPI/uvicorn) 程序，由 Node 包装脚本统一拉起，见同目录 server.js
+    // 及 PCRL-MRG 仓库自己的 CLAUDE.md "Standalone Inference Deployment" 一节。
+    // 和 central-control 跑在同一台机器（4090D）上，proxyTarget 用默认的 127.0.0.1。
+    script: './child-apps/pcrl-mrg/server.js',
+    port: 8700,
+    author: '郑诚信',
+  },
 ];
