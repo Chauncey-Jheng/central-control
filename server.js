@@ -1,5 +1,6 @@
 const express = require('express');
 const childProcess = require('child_process');
+const http = require('http');
 const os = require('os');
 const path = require('path');
 const httpProxy = require('http-proxy');
@@ -134,8 +135,15 @@ app.post('/api/apps/:appId/start', (req, res) => {
     process: spawnedProcess,
     startedAt: new Date().toISOString(),
     error: null,
+    // 子进程已经 spawn 不代表它监听的端口已经能连——有些子程序启动后还要做一段
+    // 耗时的初始化（比如 pcrl-mrg 要先把几GB的模型权重和LoRA加载进显存才会开始
+    // 监听端口，实测在此之前端口是彻底拒绝连接的，不是"启动慢但已经在服务"）。
+    // ready 由 pollReadiness 探测端口真正可连后才置为 true，前端"打开页面"按钮
+    // 据此禁用，避免用户点进一个还没起来的子程序。
+    ready: false,
   };
   childRuntimes.set(definition.id, nextRuntime);
+  pollReadiness(definition, nextRuntime);
 
   spawnedProcess.stdout.on('data', (chunk) => {
     process.stdout.write(`[${definition.id}] ${chunk}`);
@@ -300,9 +308,46 @@ function findAppDefinition(appId) {
   return childDefinitions.find((definition) => definition.id === appId);
 }
 
+const READY_POLL_INTERVAL_MS = 1500;
+const READY_PROBE_TIMEOUT_MS = 2000;
+
+// 通用就绪探测：不管子程序是什么语言/框架写的，只要它反向代理用的 host:port 能
+// 建立连接并给出任意 HTTP 响应（哪怕是 404），就说明它已经在真正监听端口了——
+// 这比"进程存活"更贴近"用户点开页面不会白屏/连接被拒"的实际含义，且不需要
+// 每个子程序都约定一个专门的健康检查接口。
+function pollReadiness(definition, runtime) {
+  if (!runtime.process || runtime.process.killed || runtime.ready) {
+    return;
+  }
+
+  const request = http.get(
+    {
+      host: definition.proxyTarget,
+      port: definition.port,
+      path: '/',
+      timeout: READY_PROBE_TIMEOUT_MS,
+    },
+    (response) => {
+      response.resume();
+      runtime.ready = true;
+    },
+  );
+
+  const scheduleRetry = () => {
+    setTimeout(() => pollReadiness(definition, runtime), READY_POLL_INTERVAL_MS);
+  };
+
+  request.on('timeout', () => {
+    request.destroy();
+    scheduleRetry();
+  });
+  request.on('error', scheduleRetry);
+}
+
 function buildAppStatus(req, definition) {
   const runtime = childRuntimes.get(definition.id);
   const running = Boolean(runtime && runtime.process && !runtime.process.killed);
+  const ready = running && Boolean(runtime.ready);
 
   return {
     id: definition.id,
@@ -312,9 +357,10 @@ function buildAppStatus(req, definition) {
     host: definition.lanHost,
     port: definition.port,
     running,
+    ready,
     pid: running ? runtime.process.pid : null,
     startedAt: runtime ? runtime.startedAt : null,
-    url: running ? buildPublicUrl(req, definition.id) : null,
+    url: ready ? buildPublicUrl(req, definition.id) : null,
     error: runtime ? runtime.error : null,
   };
 }

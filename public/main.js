@@ -29,7 +29,19 @@ function renderApps(apps) {
     const card = document.createElement('article');
     card.className = 'app-card';
 
-    const statusLabel = childApp.running ? '运行中' : '未启动';
+    // 三种状态：未启动 / 启动中（进程已起但端口还连不上，比如还在加载模型）/
+    // 运行中（端口已经能连，跳转过去不会白屏）。只有最后一种才允许点开页面。
+    const starting = childApp.running && !childApp.ready;
+    let statusLabel = '未启动';
+    let badgeClass = 'stopped';
+    if (childApp.ready) {
+      statusLabel = '运行中';
+      badgeClass = 'running';
+    } else if (starting) {
+      statusLabel = '启动中…';
+      badgeClass = 'starting';
+    }
+
     const urlText = childApp.url || '-';
     const errorText = childApp.error || '-';
 
@@ -40,8 +52,9 @@ function renderApps(apps) {
           <div class="app-meta">${escapeHtml(childApp.id)} | ${escapeHtml(childApp.script)}</div>
         <div class="app-meta">作者：${escapeHtml(childApp.author || '-')}</div>
         </div>
-        <span class="badge ${childApp.running ? 'running' : 'stopped'}">${statusLabel}</span>
+        <span class="badge ${badgeClass}">${statusLabel}</span>
       </div>
+      ${starting ? '<div class="progress-bar"><div class="progress-bar-fill"></div></div><div class="progress-hint">正在等待子程序端口就绪（部分子程序首次启动需要加载较大的模型，可能需要几分钟）…</div>' : ''}
       <div class="app-info">
         <div>内网访问地址：${escapeHtml(childApp.host)}:${childApp.port}</div>
         <div>访问地址：${escapeHtml(urlText)}</div>
@@ -51,7 +64,7 @@ function renderApps(apps) {
       </div>
       <div class="button-row">
         <button data-action="start" data-app-id="${escapeHtml(childApp.id)}" ${childApp.running ? 'disabled' : ''}>启动</button>
-        <button data-action="open" data-url="${escapeHtml(urlText)}" ${childApp.running ? '' : 'disabled'}>打开页面</button>
+        <button data-action="open" data-url="${escapeHtml(urlText)}" ${childApp.ready ? '' : 'disabled'}>打开页面</button>
         <button data-action="stop" data-app-id="${escapeHtml(childApp.id)}" ${childApp.running ? '' : 'disabled'}>关闭</button>
       </div>
     `;

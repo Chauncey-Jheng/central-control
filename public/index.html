@@ -104,6 +104,34 @@
       background: var(--warn-soft);
       color: var(--warn);
     }
+    .badge.starting {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .progress-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-bar-fill {
+      width: 40%;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--primary);
+      animation: progress-indeterminate 1.2s ease-in-out infinite;
+    }
+    @keyframes progress-indeterminate {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(250%); }
+    }
+    .progress-hint {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
     .button-row {
       display: flex;
       flex-wrap: wrap;
