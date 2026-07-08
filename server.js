@@ -9,8 +9,10 @@ loadEnv(rootEnvPath);
 const app = express();
 const host = process.env.HOST || '0.0.0.0';
 const port = Number(process.env.PORT) || 3000;
-// 子程序统一经 /apps/:appId/ 反向代理访问，默认只绑回环地址，不单独对外暴露端口。
-const childHost = process.env.CHILD_HOST || '127.0.0.1';
+// 子程序默认绑定 0.0.0.0，内网可直接用 主机IP:子程序端口 访问；
+// 公网只暴露中控主端口（HOST/PORT），子程序端口不会被转发到公网，
+// 因此公网访问始终经中控 /apps/:appId/ 统一路由。
+const childHost = process.env.CHILD_HOST || '0.0.0.0';
 const childBasePort = Number(process.env.CHILD_BASE_PORT) || 4000;
 const childDefinitions = loadChildDefinitions();
 const childRuntimes = new Map();
