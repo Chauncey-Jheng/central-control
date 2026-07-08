@@ -84,7 +84,7 @@ app.use('/apps/:appId', (req, res, next) => {
 
   req.__appId = definition.id;
   proxy.web(req, res, {
-    target: `http://127.0.0.1:${definition.port}`,
+    target: `http://${definition.proxyTarget}:${definition.port}`,
     selfHandleResponse: true,
   });
 });
@@ -179,6 +179,30 @@ const server = app.listen(port, host, () => {
   console.log(`Central control server running at http://${host}:${port}`);
 });
 
+// 主程序自己被关闭（SIGTERM/SIGINT，例如重启部署时的 kill/pkill）时，
+// 需要主动关掉它拉起的所有子程序，否则子程序会变成孤儿进程继续跑，
+// 下次再启动会因为端口占用而失败——远程（SSH 拉起）的子程序尤其容易被忽略。
+let shuttingDown = false;
+function shutdown() {
+  if (shuttingDown) {
+    return;
+  }
+  shuttingDown = true;
+
+  const running = [...childRuntimes.values()].filter(
+    (runtime) => runtime.process && !runtime.process.killed,
+  );
+  console.log(`中控退出，关闭 ${running.length} 个仍在运行的子程序...`);
+  for (const runtime of running) {
+    runtime.process.kill();
+  }
+
+  process.exit(0);
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
 // WebSocket 升级请求不经过 Express 中间件链，需要单独在底层 HTTP server 上转发
 // （满足 satellite 的 /apps/satellite/api/stream/:id 实时回放需求）。
 server.on('upgrade', (req, socket, head) => {
@@ -197,7 +221,7 @@ server.on('upgrade', (req, socket, head) => {
   }
 
   req.url = rest || '/';
-  proxy.ws(req, socket, head, { target: `http://127.0.0.1:${definition.port}` });
+  proxy.ws(req, socket, head, { target: `http://${definition.proxyTarget}:${definition.port}` });
 });
 
 function loadChildDefinitions() {
@@ -228,6 +252,9 @@ function normalizeDefinition(entry, index) {
     scriptPath,
     host: entry.host || childHost,
     port: Number(entry.port) || childBasePort + index,
+    // 反向代理实际连接的地址：本机子程序始终是 127.0.0.1；
+    // 跨服务器子程序（通过 SSH 在别的机器上拉起）需要在注册表里显式指定对方 IP。
+    proxyTarget: entry.proxyTarget || '127.0.0.1',
   };
 }
 
