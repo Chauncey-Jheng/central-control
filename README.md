@@ -21,7 +21,7 @@
 - `load-env.js` - 根目录 `.env` 读取器。
 - `public/` - 主应用前端静态资源。
 - `child-apps/` - 样例子程序目录。
-  - `app-1/server.js`
+  - `2048/server.js`
   - `app-2/server.js`
   - `app-3/server.js`
 
@@ -167,6 +167,7 @@ module.exports = [
     script: './child-apps/report-center/server.js',
     port: 4100,
     host: '0.0.0.0',
+    author: '张三', // 可选，展示在页面卡片上
   },
 ];
 ```

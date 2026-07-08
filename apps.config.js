@@ -2,15 +2,27 @@ module.exports = [
   {
     id: 'app-1',
     name: '2048',
-    script: './child-apps/app-1/server.js',
+    script: './child-apps/2048/server.js',
+    author: '郑诚信',
   },
-  './child-apps/app-2/server.js',
-  './child-apps/app-3/server.js',
+  {
+    id: 'app-2',
+    name: 'App 2',
+    script: './child-apps/app-2/server.js',
+    author: '郑诚信',
+  },
+  {
+    id: 'app-3',
+    name: 'App 3',
+    script: './child-apps/app-3/server.js',
+    author: '郑诚信',
+  },
   {
     id: 'satellite',
     name: 'FY3F 卫星遥测分析',
     // Python(FastAPI/uvicorn) 程序，由 Node 包装脚本统一拉起，见同目录 README 说明。
     script: './child-apps/satellite/server.js',
+    author: '郑诚信',
   },
   {
     id: 'fault-diagnosis',
@@ -22,6 +34,7 @@ module.exports = [
     script: './child-apps/fault-diagnosis/server.js',
     port: 8600,
     lanHost: '172.21.13.32',
+    author: '郭元祯',
   },
   {
     id: 'jaz-caption',
@@ -30,13 +43,6 @@ module.exports = [
     script: './child-apps/jaz-caption/server.js',
     port: 7860,
     lanHost: '172.21.13.32',
-  },
-  {
-    id: 'jiaaozhe-viz',
-    name: '可视化系统（贾奥哲）',
-    // 跑在 171 号服务器（172.21.13.171），同上通过 SSH 远程拉起 + 本地端口转发。
-    script: './child-apps/jiaaozhe-viz/server.js',
-    port: 8501,
-    lanHost: '172.21.13.171',
+    author: '郭元祯',
   },
 ];

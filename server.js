@@ -264,6 +264,7 @@ function normalizeDefinition(entry, index) {
     // 页面展示用的内网可访问地址：本机子程序用中控自己探测到的 IP；
     // 跨服务器子程序必须在注册表里显式指定（它们绑的是别的机器的 0.0.0.0，猜不出来）。
     lanHost: entry.lanHost || lanHost,
+    author: entry.author || null,
   };
 }
 
@@ -307,6 +308,7 @@ function buildAppStatus(req, definition) {
     id: definition.id,
     name: definition.name,
     script: definition.script,
+    author: definition.author,
     host: definition.lanHost,
     port: definition.port,
     running,

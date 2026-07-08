@@ -38,6 +38,7 @@ function renderApps(apps) {
         <div>
           <h2>${escapeHtml(childApp.name)}</h2>
           <div class="app-meta">${escapeHtml(childApp.id)} | ${escapeHtml(childApp.script)}</div>
+        <div class="app-meta">作者：${escapeHtml(childApp.author || '-')}</div>
         </div>
         <span class="badge ${childApp.running ? 'running' : 'stopped'}">${statusLabel}</span>
       </div>
