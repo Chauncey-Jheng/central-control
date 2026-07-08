@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>子程序界面</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; background: #eef7ff; color: #1f2937; }
+    .card { background: #fff; border-radius: 10px; padding: 24px; max-width: 640px; box-shadow: 0 12px 32px rgba(0,0,0,.08); }
+    button { padding: 12px 20px; font-size: 16px; border: none; border-radius: 8px; background: #10b981; color: #fff; cursor: pointer; }
+    .info { margin-top: 18px; font-size: 14px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>子程序界面</h1>
+    <p>这是一个由中控程序启动的子程序，它也有自己的前端界面。</p>
+    <button id="reloadBtn">刷新状态</button>
+    <div class="info" id="infoText">加载中...</div>
+  </div>
+
+  <script>
+    const infoText = document.getElementById('infoText');
+    const reloadBtn = document.getElementById('reloadBtn');
+
+    async function loadInfo() {
+      try {
+        const resp = await fetch('/api/info');
+        const data = await resp.json();
+        infoText.innerHTML = `消息：${data.message}<br/>时间：${data.time}`;
+      } catch (error) {
+        infoText.textContent = `请求失败：${error.message}`;
+      }
+    }
+
+    reloadBtn.addEventListener('click', loadInfo);
+    loadInfo();
+  </script>
+</body>
+</html>

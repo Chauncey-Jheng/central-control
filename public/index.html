@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>中央控制程序</title>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #eef4ff 0%, #f8fbff 45%, #eefaf4 100%);
+      --panel: rgba(255, 255, 255, 0.88);
+      --line: rgba(37, 53, 89, 0.12);
+      --text: #20304d;
+      --muted: #5f6f8f;
+      --primary: #2155ff;
+      --primary-soft: #dfe7ff;
+      --ok: #1f8f5f;
+      --ok-soft: #ddf6ea;
+      --warn: #8c5a16;
+      --warn-soft: #fff0d9;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 32px 18px 48px;
+    }
+    .shell {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+    .hero {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(26, 41, 76, 0.12);
+      backdrop-filter: blur(12px);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 44px);
+    }
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 760px;
+      line-height: 1.7;
+    }
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+    .app-card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 16px 40px rgba(26, 41, 76, 0.08);
+    }
+    .app-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .app-header h2 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+    .app-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+    .app-info {
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge.running {
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+    .badge.stopped {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-size: 14px;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #bcc8ea;
+      cursor: not-allowed;
+    }
+    .empty {
+      padding: 24px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px dashed var(--line);
+      color: var(--muted);
+      text-align: center;
+      margin-top: 22px;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>中央控制程序</h1>
+      <p>主程序会读取子程序注册表，自动展示每个子程序的状态、端口和访问地址。你只需要登记启动脚本，主程序就可以统一管理它们。</p>
+    </section>
+    <section class="app-grid" id="appList"></section>
+  </main>
+
+  <script src="main.js"></script>
+</body>
+</html>
