@@ -1,5 +1,9 @@
 module.exports = [
-  './child-apps/app-1/server.js',
+  {
+    id: 'app-1',
+    name: '2048',
+    script: './child-apps/app-1/server.js',
+  },
   './child-apps/app-2/server.js',
   './child-apps/app-3/server.js',
   {
