@@ -14,8 +14,10 @@ module.exports = [
     // 跑在 32 号服务器（172.21.13.32）。4090D 和 172.21.13.x 网段没有直接路由，
     // Node 包装脚本通过 SSH 跳板远程拉起，并用同一个 SSH 会话做本地端口转发，
     // 所以这里 proxyTarget 仍是默认的 127.0.0.1。见 child-apps/lib/remote-ssh-child.js。
+    // lanHost 显式指定成对方机器的真实 IP，纯粹用于页面展示（中控自己探测不出来）。
     script: './child-apps/fault-diagnosis/server.js',
     port: 8600,
+    lanHost: '172.21.13.32',
   },
   {
     id: 'jaz-caption',
@@ -23,6 +25,7 @@ module.exports = [
     // 跑在 32 号服务器（172.21.13.32），同上通过 SSH 远程拉起 + 本地端口转发。
     script: './child-apps/jaz-caption/server.js',
     port: 7860,
+    lanHost: '172.21.13.32',
   },
   {
     id: 'jiaaozhe-viz',
@@ -30,5 +33,6 @@ module.exports = [
     // 跑在 171 号服务器（172.21.13.171），同上通过 SSH 远程拉起 + 本地端口转发。
     script: './child-apps/jiaaozhe-viz/server.js',
     port: 8501,
+    lanHost: '172.21.13.171',
   },
 ];

@@ -42,7 +42,7 @@ function renderApps(apps) {
         <span class="badge ${childApp.running ? 'running' : 'stopped'}">${statusLabel}</span>
       </div>
       <div class="app-info">
-        <div>绑定地址：${escapeHtml(childApp.host)}:${childApp.port}</div>
+        <div>内网访问地址：${escapeHtml(childApp.host)}:${childApp.port}</div>
         <div>访问地址：${escapeHtml(urlText)}</div>
         <div>PID：${childApp.pid || '-'}</div>
         <div>启动时间：${escapeHtml(childApp.startedAt || '-')}</div>

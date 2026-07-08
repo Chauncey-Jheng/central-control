@@ -1,5 +1,6 @@
 const express = require('express');
 const childProcess = require('child_process');
+const os = require('os');
 const path = require('path');
 const httpProxy = require('http-proxy');
 const { loadEnv, rootEnvPath } = require('./load-env');
@@ -14,6 +15,11 @@ const port = Number(process.env.PORT) || 3000;
 // 因此公网访问始终经中控 /apps/:appId/ 统一路由。
 const childHost = process.env.CHILD_HOST || '0.0.0.0';
 const childBasePort = Number(process.env.CHILD_BASE_PORT) || 4000;
+// 页面展示用的内网可访问地址：子程序实际绑定的是 0.0.0.0（监听所有网卡），
+// 这个值不能直接拿来连接，所以展示时换成一个真实可达的 IP。本机子程序默认
+// 自动探测本机内网 IP（可用 LAN_HOST 覆盖）；跨服务器子程序在 apps.config.js
+// 里各自显式指定 lanHost（它们根本不在本机，探测不出来）。
+const lanHost = process.env.LAN_HOST || detectLanIp();
 const childDefinitions = loadChildDefinitions();
 const childRuntimes = new Map();
 
@@ -255,7 +261,22 @@ function normalizeDefinition(entry, index) {
     // 反向代理实际连接的地址：本机子程序始终是 127.0.0.1；
     // 跨服务器子程序（通过 SSH 在别的机器上拉起）需要在注册表里显式指定对方 IP。
     proxyTarget: entry.proxyTarget || '127.0.0.1',
+    // 页面展示用的内网可访问地址：本机子程序用中控自己探测到的 IP；
+    // 跨服务器子程序必须在注册表里显式指定（它们绑的是别的机器的 0.0.0.0，猜不出来）。
+    lanHost: entry.lanHost || lanHost,
   };
+}
+
+function detectLanIp() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return '127.0.0.1';
 }
 
 function deriveAppId(scriptPath, index) {
@@ -286,7 +307,7 @@ function buildAppStatus(req, definition) {
     id: definition.id,
     name: definition.name,
     script: definition.script,
-    host: definition.host,
+    host: definition.lanHost,
     port: definition.port,
     running,
     pid: running ? runtime.process.pid : null,
