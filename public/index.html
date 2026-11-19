@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>中央控制程序</title>
+  <title>bjutcv-hub</title>
   <style>
     :root {
       --bg: linear-gradient(135deg, #eef4ff 0%, #f8fbff 45%, #eefaf4 100%);
@@ -191,12 +191,14 @@
 <body>
   <main class="shell">
     <section class="hero">
-      <h1>中央控制程序</h1>
+      <h1>bjutcv-hub</h1>
+      <button id="reloadBtn" style="margin:6px 0 2px; padding:6px 14px; cursor:pointer;" title="重新读取 apps.config.js，无需重启中控">↻ 重载子程序配置</button>
+      <span id="reloadMsg" style="margin-left:10px; font-size:12px; opacity:.75"></span>
       <p>主程序会读取子程序注册表，自动展示每个子程序的状态、端口和访问地址。你只需要登记启动脚本，主程序就可以统一管理它们。</p>
       <div class="network-note">
         <h3>关于访问方式的说明</h3>
         <p>子程序默认绑定 <code>0.0.0.0</code>，所以在内网环境下，用「主机IP + 子程序自己的端口」也能直接访问；但在公网环境下，<strong>只有中控主程序这一个端口会被对外暴露</strong>（子程序端口不会被单独转发到公网），必须先在本页面点击「启动」，再通过中控统一的 <code>/apps/子程序ID/</code> 路径访问——中控会把请求反向代理到对应的子程序端口。</p>
-        <p>例如公网访问入口是 <code>http://&lt;主机&gt;:4020</code>，那么「FY3F 卫星遥测分析」子程序的公网访问地址就是 <code>http://&lt;主机&gt;:4020/apps/satellite/</code>；它自身监听的 <code>4003</code> 端口只在内网可达，公网无法直接连接。这样设计的好处是：对外只需要暴露主程序这一个端口，减少了公网端口的管理和安全暴露面，同时所有子程序的启动、关闭、状态查看也都能在这一个入口统一完成；内网用户如果需要，仍可以绕开中控直接连子程序端口调试。</p>
+        <p>例如公网访问入口是 <code>http://&lt;主机&gt;:4020</code>，那么「卫星遥测分析智能体」子程序的公网访问地址就是 <code>http://&lt;主机&gt;:4020/apps/satellite/</code>；它自身监听的 <code>4003</code> 端口只在内网可达，公网无法直接连接。这样设计的好处是：对外只需要暴露主程序这一个端口，减少了公网端口的管理和安全暴露面，同时所有子程序的启动、关闭、状态查看也都能在这一个入口统一完成；内网用户如果需要，仍可以绕开中控直接连子程序端口调试。</p>
       </div>
     </section>
     <section class="app-grid" id="appList"></section>

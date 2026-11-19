@@ -185,12 +185,69 @@ app.post('/api/apps/:appId/stop', (req, res) => {
   res.json({ status: 'stopping' });
 });
 
+// 热重载子应用注册表：重新读 apps.config.js，按 id 与当前配置对账——
+// 被删除的应用先停进程再摘除；script/port/host/proxyTarget 变化的应用停掉旧进程
+// （需手动再启动以套用新参数）；仅名称等展示字段变化的应用不打扰运行中的进程。
+// childDefinitions 是被各路由闭包引用的同一个数组，这里原地替换内容以保持引用。
+app.post('/api/reload', (_req, res) => {
+  let next;
+  try {
+    delete require.cache[require.resolve('./apps.config')];
+    next = loadChildDefinitions();
+  } catch (error) {
+    return res.status(400).json({ error: 'config-invalid', detail: error.message });
+  }
+
+  const nextIds = new Set(next.map((d) => d.id));
+  const prevById = new Map(childDefinitions.map((d) => [d.id, d]));
+  const added = [];
+  const removed = [];
+  const changed = [];
+  const unchanged = [];
+
+  const stopAndDrop = (id) => {
+    const runtime = childRuntimes.get(id);
+    if (runtime && runtime.process && !runtime.process.killed) {
+      runtime.process.kill();
+    }
+    childRuntimes.delete(id);
+  };
+
+  for (const def of childDefinitions) {
+    if (!nextIds.has(def.id)) {
+      removed.push(def.id);
+      stopAndDrop(def.id);
+    }
+  }
+  for (const def of next) {
+    const prev = prevById.get(def.id);
+    if (!prev) {
+      added.push(def.id);
+    } else if (
+      prev.script !== def.script || prev.port !== def.port ||
+      prev.host !== def.host || prev.proxyTarget !== def.proxyTarget
+    ) {
+      changed.push(def.id);
+      stopAndDrop(def.id);
+    } else {
+      unchanged.push(def.id);
+    }
+  }
+
+  childDefinitions.length = 0;
+  childDefinitions.push(...next);
+  console.log(
+    `[reload] added=[${added}] removed=[${removed}] changed=[${changed}] unchanged=[${unchanged}]`,
+  );
+  return res.json({ status: 'reloaded', added, removed, changed, unchanged });
+});
+
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const server = app.listen(port, host, () => {
-  console.log(`Central control server running at http://${host}:${port}`);
+  console.log(`bjutcv-hub running at http://${host}:${port}`);
 });
 
 // 主程序自己被关闭（SIGTERM/SIGINT，例如重启部署时的 kill/pkill）时，

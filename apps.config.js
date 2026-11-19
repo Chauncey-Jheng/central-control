@@ -1,27 +1,10 @@
 module.exports = [
   {
-    id: 'app-1',
-    name: '2048',
-    script: './child-apps/2048/server.js',
-    author: '郑诚信',
-  },
-  {
-    id: 'app-2',
-    name: 'App 2',
-    script: './child-apps/app-2/server.js',
-    author: '郑诚信',
-  },
-  {
-    id: 'app-3',
-    name: 'App 3',
-    script: './child-apps/app-3/server.js',
-    author: '郑诚信',
-  },
-  {
     id: 'satellite',
-    name: 'FY3F 卫星遥测分析',
+    name: '卫星遥测分析智能体',
     // Python(FastAPI/uvicorn) 程序，由 Node 包装脚本统一拉起，见同目录 README 说明。
     script: './child-apps/satellite/server.js',
+    port: 4003,
     author: '郑诚信',
   },
   {

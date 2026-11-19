@@ -129,3 +129,29 @@ function escapeHtml(value) {
 
 refreshApps();
 setInterval(refreshApps, 2000);
+
+
+// 热重载子程序注册表
+const reloadBtn = document.getElementById('reloadBtn');
+const reloadMsg = document.getElementById('reloadMsg');
+if (reloadBtn) {
+  reloadBtn.addEventListener('click', async () => {
+    reloadBtn.disabled = true;
+    reloadMsg.textContent = '重载中…';
+    try {
+      const response = await fetch('/api/reload', { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || data.error || response.status);
+      const parts = [];
+      if (data.added.length) parts.push(`新增 ${data.added.join(',')}`);
+      if (data.removed.length) parts.push(`移除 ${data.removed.join(',')}`);
+      if (data.changed.length) parts.push(`变更(已停待启) ${data.changed.join(',')}`);
+      reloadMsg.textContent = parts.length ? `已重载：${parts.join('；')}` : '已重载：无变化';
+      await refreshApps();
+    } catch (error) {
+      reloadMsg.textContent = `重载失败：${error.message || error}`;
+    } finally {
+      reloadBtn.disabled = false;
+    }
+  });
+}
